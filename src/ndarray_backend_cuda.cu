@@ -95,7 +95,7 @@ __global__ void CompactKernel(const scalar_t* a, scalar_t* out, size_t size, Cud
    *   strides: vector of strides of out array
    *   offset: offset of out array
    */
-  size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+  // size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
 
   /// BEGIN SOLUTION
   assert(false && "Not Implemented");
