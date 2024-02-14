@@ -196,6 +196,131 @@ void ScalarAdd(const AlignedArray& a, scalar_t val, AlignedArray* out) {
  * signatures above.
  */
 
+void EwiseTanh(const AlignedArray& a, AlignedArray* out) {
+  /**
+   * Set entries in out to be the tanh of correspondings entires in a.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = std::tanh(a.ptr[i]);
+  }
+}
+
+void EwiseExp(const AlignedArray& a, AlignedArray* out) {
+  /**
+   * Set entries in out to be the exp of correspondings entires in a.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = std::exp(a.ptr[i]);
+  }
+}
+
+void EwiseLog(const AlignedArray& a, AlignedArray* out) {
+  /**
+   * Set entries in out to be the log of correspondings entires in a.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = std::log(a.ptr[i]);
+  }
+}
+
+void EwiseGe(const AlignedArray& a, const AlignedArray& b, AlignedArray* out) {
+  /**
+   * Set entries in out to be if a >= b.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] >= b.ptr[i] ? 1.0 : 0.0;
+  }
+}
+
+void ScalarGe(const AlignedArray& a, scalar_t val, AlignedArray* out) {
+  /**
+   * Set entries in out to be if a >= val.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] >= val ? 1.0 : 0.0;
+  }
+}
+
+void EwiseEq(const AlignedArray& a, const AlignedArray& b, AlignedArray* out) {
+  /**
+   * Set entries in out to be if a == b.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] == b.ptr[i] ? 1.0 : 0.0;
+  }
+}
+
+void ScalarEq(const AlignedArray& a, scalar_t val, AlignedArray* out) {
+  /**
+   * Set entries in out to be if a == val.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] == val ? 1.0 : 0.0;
+  }
+}
+
+void EwiseMaximum(const AlignedArray& a, const AlignedArray& b, AlignedArray* out) {
+  /**
+   * Set entries in out to be the max of correspondings entires in a and b.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] >= b.ptr[i] ? a.ptr[i] : b.ptr[i];
+  }
+}
+
+void ScalarMaximum(const AlignedArray& a, scalar_t val, AlignedArray* out) {
+  /**
+   * Set entries in out to be the max of corresponding entry in a plus the scalar val.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] >= val ? a.ptr[i] : val;
+  }
+}
+
+void ScalarPower(const AlignedArray& a, scalar_t val, AlignedArray* out) {
+  /**
+   * Set entries in out to be the power of corresponding entry in a plus the scalar val.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = std::pow(a.ptr[i], val);
+  }
+}
+
+void EwiseDiv(const AlignedArray& a, const AlignedArray& b, AlignedArray* out) {
+  /**
+   * Set entries in out to be the quotient of correspondings entires in a and b.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] / b.ptr[i];
+  }
+}
+
+void ScalarDiv(const AlignedArray& a, scalar_t val, AlignedArray* out) {
+  /**
+   * Set entries in out to be the quotient of corresponding entry in a plus the scalar val.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] / val;
+  }
+}
+
+void EwiseMul(const AlignedArray& a, const AlignedArray& b, AlignedArray* out) {
+  /**
+   * Set entries in out to be the product of correspondings entires in a and b.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] * b.ptr[i];
+  }
+}
+
+void ScalarMul(const AlignedArray& a, scalar_t val, AlignedArray* out) {
+  /**
+   * Set entries in out to be the quotient of corresponding entry in a plus the scalar val.
+   */
+  for (size_t i = 0; i < a.size; i++) {
+    out->ptr[i] = a.ptr[i] * val;
+  }
+}
 
 void Matmul(const AlignedArray& a, const AlignedArray& b, AlignedArray* out, uint32_t m, uint32_t n,
             uint32_t p) {
@@ -341,22 +466,22 @@ PYBIND11_MODULE(ndarray_backend_cpu, m) {
   m.def("ewise_add", EwiseAdd);
   m.def("scalar_add", ScalarAdd);
 
-  // m.def("ewise_mul", EwiseMul);
-  // m.def("scalar_mul", ScalarMul);
-  // m.def("ewise_div", EwiseDiv);
-  // m.def("scalar_div", ScalarDiv);
-  // m.def("scalar_power", ScalarPower);
+  m.def("ewise_mul", EwiseMul);
+  m.def("scalar_mul", ScalarMul);
+  m.def("ewise_div", EwiseDiv);
+  m.def("scalar_div", ScalarDiv);
+  m.def("scalar_power", ScalarPower);
 
-  // m.def("ewise_maximum", EwiseMaximum);
-  // m.def("scalar_maximum", ScalarMaximum);
-  // m.def("ewise_eq", EwiseEq);
-  // m.def("scalar_eq", ScalarEq);
-  // m.def("ewise_ge", EwiseGe);
-  // m.def("scalar_ge", ScalarGe);
+  m.def("ewise_maximum", EwiseMaximum);
+  m.def("scalar_maximum", ScalarMaximum);
+  m.def("ewise_eq", EwiseEq);
+  m.def("scalar_eq", ScalarEq);
+  m.def("ewise_ge", EwiseGe);
+  m.def("scalar_ge", ScalarGe);
 
-  // m.def("ewise_log", EwiseLog);
-  // m.def("ewise_exp", EwiseExp);
-  // m.def("ewise_tanh", EwiseTanh);
+  m.def("ewise_log", EwiseLog);
+  m.def("ewise_exp", EwiseExp);
+  m.def("ewise_tanh", EwiseTanh);
 
   // m.def("matmul", Matmul);
   // m.def("matmul_tiled", MatmulTiled);
