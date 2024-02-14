@@ -409,7 +409,19 @@ void ReduceMax(const AlignedArray& a, AlignedArray* out, size_t reduce_size) {
    */
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* a_ptr = a.ptr;
+  scalar_t* out_ptr = out->ptr;
+  size_t out_size = out->size;
+
+  int32_t a_index = 0;
+  for(int32_t i = 0; i < out_size; i++){
+    scalar_t max = a_ptr[a_index];
+    for(int32_t j = 1; j < reduce_size; j++){
+      max = a_ptr[a_index + j] > max ? a_ptr[a_index + j] : max;
+    }
+    a_index += reduce_size;
+    out_ptr[i] = max;
+  }
   /// END SOLUTION
 }
 
@@ -424,7 +436,19 @@ void ReduceSum(const AlignedArray& a, AlignedArray* out, size_t reduce_size) {
    */
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* a_ptr = a.ptr;
+  scalar_t* out_ptr = out->ptr;
+  size_t out_size = out->size;
+
+  int32_t a_index = 0;
+  for(int32_t i = 0; i < out_size; i++){
+    scalar_t sum = 0;
+    for(int32_t j = 0; j < reduce_size; j++){
+      sum += a_ptr[a_index + j];
+    }
+    a_index += reduce_size;
+    out_ptr[i] = sum;
+  }
   /// END SOLUTION
 }
 
@@ -486,6 +510,6 @@ PYBIND11_MODULE(ndarray_backend_cpu, m) {
   // m.def("matmul", Matmul);
   // m.def("matmul_tiled", MatmulTiled);
 
-  // m.def("reduce_max", ReduceMax);
-  // m.def("reduce_sum", ReduceSum);
+  m.def("reduce_max", ReduceMax);
+  m.def("reduce_sum", ReduceSum);
 }
