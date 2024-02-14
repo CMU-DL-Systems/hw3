@@ -43,7 +43,18 @@ void Fill(AlignedArray* out, scalar_t val) {
   }
 }
 
-
+void increase(std::vector<int32_t> shape, std::vector<int32_t>& index_vec){
+  for(int32_t i = index_vec.size() - 1; i >= 0; i--){
+    if(index_vec[i] + 1 < shape[i]){
+      index_vec[i]++;
+      break;
+    }
+    else{
+      index_vec[i] = 0;
+      continue;
+    }
+  }
+}
 
 void Compact(const AlignedArray& a, AlignedArray* out, std::vector<int32_t> shape,
              std::vector<int32_t> strides, size_t offset) {
@@ -62,7 +73,23 @@ void Compact(const AlignedArray& a, AlignedArray* out, std::vector<int32_t> shap
    *  function will implement here, so we won't repeat this note.)
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* a_ptr = a.ptr;
+  scalar_t* out_ptr = out->ptr;
+  std::vector<int32_t> index_vec(shape.size());
+
+  int32_t out_len = 1;
+  for(int32_t i = 0; i < shape.size(); i++){
+    out_len *= shape[i];
+  }
+
+  for(int32_t i = 0; i < out_len; i++){
+    size_t index = offset;
+    for(int32_t j = 0; j < index_vec.size(); j++){
+      index += index_vec[j] * strides[j];
+    }
+    out_ptr[i] = a_ptr[index];
+    increase(shape, index_vec);
+  }
   /// END SOLUTION
 }
 
@@ -79,7 +106,23 @@ void EwiseSetitem(const AlignedArray& a, AlignedArray* out, std::vector<int32_t>
    *   offset: offset of the *out* array (not a, which has zero offset, being compact)
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* a_ptr = a.ptr;
+  scalar_t* out_ptr = out->ptr;
+  std::vector<int32_t> index_vec(shape.size());
+
+  int32_t a_len = 1;
+  for(int32_t i = 0; i < shape.size(); i++){
+    a_len *= shape[i];
+  }
+
+  for(int32_t i = 0; i < a_len; i++){
+    size_t index = offset;
+    for(int32_t j = 0; j < index_vec.size(); j++){
+      index += index_vec[j] * strides[j];
+    }
+    out_ptr[index] = a_ptr[i];
+    increase(shape, index_vec);
+  }
   /// END SOLUTION
 }
 
@@ -100,7 +143,17 @@ void ScalarSetitem(const size_t size, scalar_t val, AlignedArray* out, std::vect
    */
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* out_ptr = out->ptr;
+  std::vector<int32_t> index_vec(shape.size());
+
+  for(int32_t i = 0; i < size; i++){
+    size_t index = offset;
+    for(int32_t j = 0; j < index_vec.size(); j++){
+      index += index_vec[j] * strides[j];
+    }
+    out_ptr[index] = val;
+    increase(shape, index_vec);
+  }
   /// END SOLUTION
 }
 

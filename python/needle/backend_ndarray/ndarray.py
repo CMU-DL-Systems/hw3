@@ -394,19 +394,20 @@ class NDArray:
         new_shape = []
         strides = self.strides
         new_offset = 0
+        new_strides = []
 
         for i, idx in enumerate(idxs):
             start = idx.start
             stop = idx.stop
             step = idx.step
 
-            shape = (stop - start) // step
+            shape = (stop - start - 1) // step + 1
             new_shape.append(shape)
+            new_strides.append(strides[i] * step)
 
             new_offset += start * strides[i]
         
-        # new_offset += 1
-        return self.make(new_shape, strides=self.strides, device=self.device, handle=self._handle, offset=new_offset)
+        return self.make(new_shape, strides=tuple(new_strides), device=self.device, handle=self._handle, offset=new_offset)
         ### END YOUR SOLUTION
 
     def __setitem__(self, idxs, other):
