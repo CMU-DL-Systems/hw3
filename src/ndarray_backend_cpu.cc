@@ -77,12 +77,7 @@ void Compact(const AlignedArray& a, AlignedArray* out, std::vector<int32_t> shap
   scalar_t* out_ptr = out->ptr;
   std::vector<int32_t> index_vec(shape.size());
 
-  int32_t out_len = 1;
-  for(int32_t i = 0; i < shape.size(); i++){
-    out_len *= shape[i];
-  }
-
-  for(int32_t i = 0; i < out_len; i++){
+  for(int32_t i = 0; i < out->size; i++){
     size_t index = offset;
     for(int32_t j = 0; j < index_vec.size(); j++){
       index += index_vec[j] * strides[j];
@@ -110,12 +105,7 @@ void EwiseSetitem(const AlignedArray& a, AlignedArray* out, std::vector<int32_t>
   scalar_t* out_ptr = out->ptr;
   std::vector<int32_t> index_vec(shape.size());
 
-  int32_t a_len = 1;
-  for(int32_t i = 0; i < shape.size(); i++){
-    a_len *= shape[i];
-  }
-
-  for(int32_t i = 0; i < a_len; i++){
+  for(int32_t i = 0; i < a.size; i++){
     size_t index = offset;
     for(int32_t j = 0; j < index_vec.size(); j++){
       index += index_vec[j] * strides[j];
