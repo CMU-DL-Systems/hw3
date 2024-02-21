@@ -338,7 +338,19 @@ void Matmul(const AlignedArray& a, const AlignedArray& b, AlignedArray* out, uin
    */
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* a_ptr = a.ptr;
+  scalar_t* b_ptr = b.ptr;
+  scalar_t* out_ptr = out->ptr;
+
+  for(int32_t i = 0; i < m; i++){
+    for(int32_t j = 0; j < p; j++){
+      scalar_t res = 0;
+      for(int32_t k = 0; k < n; k++){
+        res += a_ptr[i*n + k] * b_ptr[k*p + j];
+      }
+      out_ptr[i*p + j] = res;
+    }
+  }
   /// END SOLUTION
 }
 
@@ -368,7 +380,15 @@ inline void AlignedDot(const float* __restrict__ a,
   out = (float*)__builtin_assume_aligned(out, TILE * ELEM_SIZE);
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  for(int32_t i = 0; i < TILE; i++){
+    for(int32_t j = 0; j < TILE; j++){
+      scalar_t res = 0;
+      for(int32_t k = 0; k < TILE; k++){
+        res += a[i*TILE + k] * b[k*TILE + j];
+      }
+      out[i*TILE + j] += res;
+    }
+  }
   /// END SOLUTION
 }
 
@@ -394,7 +414,23 @@ void MatmulTiled(const AlignedArray& a, const AlignedArray& b, AlignedArray* out
    *
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  scalar_t* a_ptr = a.ptr;
+  scalar_t* b_ptr = b.ptr;
+  scalar_t* out_ptr = out->ptr;
+
+  // Clear out array
+  for(int32_t i = 0; i < out->size; i++){
+    out_ptr[i] = 0;
+  }
+
+  for(int32_t i = 0; i < m/TILE; i++){
+    for(int32_t j = 0; j < p/TILE; j++){
+      for(int32_t k = 0; k < n/TILE; k++){
+        AlignedDot(&a_ptr[(i * n/TILE + k) * TILE * TILE], &b_ptr[(k * p/TILE + j) * TILE * TILE], 
+          &out_ptr[(i * p/TILE + j) * TILE * TILE]);
+      }
+    }
+  }
   /// END SOLUTION
 }
 
@@ -507,8 +543,8 @@ PYBIND11_MODULE(ndarray_backend_cpu, m) {
   m.def("ewise_exp", EwiseExp);
   m.def("ewise_tanh", EwiseTanh);
 
-  // m.def("matmul", Matmul);
-  // m.def("matmul_tiled", MatmulTiled);
+  m.def("matmul", Matmul);
+  m.def("matmul_tiled", MatmulTiled);
 
   m.def("reduce_max", ReduceMax);
   m.def("reduce_sum", ReduceSum);
