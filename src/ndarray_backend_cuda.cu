@@ -79,7 +79,31 @@ void Fill(CudaArray* out, scalar_t val) {
 
 // Untility function to convert contiguous index i to memory location from strides
 
+__device__ size_t GetIndex(CudaVec shape, CudaVec strides, size_t offset, size_t gid){
+  int32_t num_per_dim[MAX_VEC_SIZE];
+  int32_t* shape_data = shape.data;
+  int32_t* strides_data = strides.data;
 
+  int32_t product = 1;
+  for(int i = shape.size - 1; i >= 0; i--){
+    num_per_dim[i] = product;
+    product *= shape_data[i];
+  }
+
+  int32_t index_array[MAX_VEC_SIZE];
+  for(int32_t i = 0; i < shape.size; i++){
+    int32_t num_dim = num_per_dim[i];
+    index_array[i] = gid / num_dim;
+    gid = gid % num_dim;
+  }
+
+  size_t index = offset;
+  for(int32_t i = 0; i < shape.size; i++){
+    index += index_array[i] * strides_data[i];
+  }
+
+  return index;
+}
 
 __global__ void CompactKernel(const scalar_t* a, scalar_t* out, size_t size, CudaVec shape,
                               CudaVec strides, size_t offset) {
@@ -95,10 +119,13 @@ __global__ void CompactKernel(const scalar_t* a, scalar_t* out, size_t size, Cud
    *   strides: vector of strides of out array
    *   offset: offset of out array
    */
-  // size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+  if(gid < size){
+    size_t index = GetIndex(shape, strides, offset, gid);
+    out[gid] = a[index];
+  }
   /// END SOLUTION
 }
 
