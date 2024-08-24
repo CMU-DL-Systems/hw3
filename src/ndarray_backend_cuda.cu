@@ -422,15 +422,52 @@ void EwiseTanh(const CudaArray& a, CudaArray* out) {
 
 __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* out, uint32_t M, uint32_t N,
             uint32_t P) {
-  size_t rid = blockIdx.x * blockDim.x + threadIdx.x;
-  size_t cid = blockIdx.y * blockDim.y + threadIdx.y;
+  const size_t S = 4;
+  const size_t L = 3;
+  const size_t V = 2;
 
-  if(rid < M && cid < P) {
-    scalar_t res = 0;
-    for(int i = 0; i < N; i++){
-      res += a[rid * N + i] * b[i * P + cid];
+  __shared__ scalar_t sA[S][L], sB[S][L];
+  scalar_t c[V][V] = {0};
+  scalar_t a_vector[V], b_vector[V];
+  size_t yblock = blockIdx.y;
+  size_t xblock = blockIdx.x;
+
+  for(size_t ko = 0; ko < N; ko += S){
+    __syncthreads();
+    size_t nthreads = blockDim.y * blockDim.x;
+    size_t tid = threadIdx.y * blockDim.x + threadIdx.x;
+    for(size_t j = 0; j < L * S / nthreads; ++j){
+      size_t y = (j * nthreads + tid) / L;
+      size_t x = (j * nthreads + tid) % L;
+      sA[y][x] = a[(ko+y) * N + yblock * L + x];
     }
-    out[rid * P + cid] = res;
+    for(size_t j = 0; j < L * S / nthreads; ++j){
+      size_t y = (j * nthreads + tid) / L;
+      size_t x = (j * nthreads + tid) % L;
+      sB[y][x] = b[(ko+y) * P + yblock * L + x];
+    }
+    __syncthreads();
+
+    for(size_t ki = 0; ki < S; ++ki){
+      for(size_t i = 0; i < V; ++i){
+        a_vector[i] = sA[ki][threadIdx.y * V + i];
+        b_vector[i] = sA[ki][threadIdx.x * V + i];
+      }
+
+      for(size_t y = 0; y < V; ++y){
+        for(size_t x = 0; x < V; ++x){
+          c[y][x] += a_vector[y] * b_vector[x];
+        }
+      }
+    }
+  }
+
+  size_t ybase = blockIdx.y * blockDim.y + threadIdx.y;
+  size_t xbase = blockIdx.x * blockDim.x + threadIdx.x;
+  for(size_t i = 0; i < V; ++i){
+    for(size_t j = 0; j < V; ++j){
+      out[(ybase * V + i) * P + (xbase * V + j)] = c[i][j];
+    }
   }
 }
 
