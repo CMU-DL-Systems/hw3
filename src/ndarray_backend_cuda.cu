@@ -44,6 +44,16 @@ CudaDims CudaOneDim(size_t size) {
   return dim;
 }
 
+CudaDims CudaTwoDim(size_t rows, size_t columns) {
+  /**
+   * Utility function to get cuda dimensions for 2D call
+   */
+  CudaDims dim;
+  dim.grid = dim3(BASE_THREAD_NUM, BASE_THREAD_NUM, 1);
+  dim.block = dim3((rows + BASE_THREAD_NUM - 1) / BASE_THREAD_NUM, (columns + BASE_THREAD_NUM - 1) / BASE_THREAD_NUM, 1);
+  return dim;
+}
+
 #define MAX_VEC_SIZE 8
 struct CudaVec {
   uint32_t size;
@@ -412,9 +422,8 @@ void EwiseTanh(const CudaArray& a, CudaArray* out) {
 
 __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* out, uint32_t M, uint32_t N,
             uint32_t P) {
-  size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
-  size_t rid = gid / P;
-  size_t cid = gid % P;
+  size_t rid = blockIdx.x * blockDim.x + threadIdx.x;
+  size_t cid = blockIdx.y * blockDim.y + threadIdx.y;
 
   if(rid < M && cid < P) {
     scalar_t res = 0;
@@ -450,7 +459,7 @@ void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, 
    */
 
   /// BEGIN SOLUTION
-  CudaDims dim = CudaOneDim(out->size);
+  CudaDims dim = CudaTwoDim(M, P);
   MatmulKernel<<<dim.grid, dim.block>>>(a.ptr, b.ptr, out->ptr, M, N, P);
   /// END SOLUTION
 }
