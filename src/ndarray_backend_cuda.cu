@@ -426,7 +426,9 @@ __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* out
   const size_t L = 3;
   const size_t V = 2;
 
+  // Define shared memory.
   __shared__ scalar_t sA[S][L], sB[S][L];
+  // Each thread computes V*V.
   scalar_t c[V][V] = {0};
   scalar_t a_vector[V], b_vector[V];
   size_t yblock = blockIdx.y;
@@ -434,6 +436,7 @@ __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* out
 
   for(size_t ko = 0; ko < N; ko += S){
     __syncthreads();
+    // Load data to shared memory.
     size_t nthreads = blockDim.y * blockDim.x;
     size_t tid = threadIdx.y * blockDim.x + threadIdx.x;
     for(size_t j = 0; j < L * S / nthreads; ++j){
@@ -454,6 +457,7 @@ __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* out
         b_vector[i] = sA[ki][threadIdx.x * V + i];
       }
 
+      // Compute V*V results.
       for(size_t y = 0; y < V; ++y){
         for(size_t x = 0; x < V; ++x){
           c[y][x] += a_vector[y] * b_vector[x];
@@ -462,6 +466,7 @@ __global__ void MatmulKernel(const scalar_t* a, const scalar_t* b, scalar_t* out
     }
   }
 
+  // Copy results to original matrix.
   size_t ybase = blockIdx.y * blockDim.y + threadIdx.y;
   size_t xbase = blockIdx.x * blockDim.x + threadIdx.x;
   for(size_t i = 0; i < V; ++i){
